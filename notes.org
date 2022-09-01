@@ -1,0 +1,83 @@
+These are the example commands I used while in the 'pry' based breakpoint:
+
+NOTE: A lot of these methods of using '.column_names', '.create', '.all', '.find', '.find_by', 'attr_accessors', and '.save' are available to the related 'Student' class in the project because the 'Student' class is inheriting these methods from the 'ActiveRecord::Base' class through class inheritance which is in this part of the 'Student' class:
+#+begin_src ruby
+class Student < ActiveRecord::Base
+end
+#+end_src
+
+Here are the commands used:
+#+begin_src ruby
+# Using .column_names method:
+[1] pry(main)> Student.column_names
+=> ["id", "name"]
+
+# Using .create() to create a new database object with 'Active Record':
+[2] pry(main)> Student.create(name: "Jon")
+D, [2022-09-01T13:38:23.868329 #2780] DEBUG -- :   TRANSACTION (0.1ms)  begin transaction
+D, [2022-09-01T13:38:23.872903 #2780] DEBUG -- :   Student Create (2.7ms)  INSERT INTO "students" ("name") VALUES (?)  [["name", "Jon"]]
+D, [2022-09-01T13:38:23.874968 #2780] DEBUG -- :   TRANSACTION (1.7ms)  commit transaction
+=> #<Student:0x00007f826bb8f368 id: 1, name: "Jon">
+
+# Using .all() to return all of the records from the 'students' table as instances of the Student class:
+[3] pry(main)> Student.all
+D, [2022-09-01T13:39:30.775803 #2780] DEBUG -- :   Student Load (0.2ms)  SELECT "students".* FROM "students"
+=> [#<Student:0x00007f826bb368f8 id: 1, name: "Jon">]
+
+# Using .find() to retrieve a 'Student' instance from the database by their 'id' value:
+[4] pry(main)> Student.find(1)
+D, [2022-09-01T13:40:21.074113 #2780] DEBUG -- :   Student Load (0.2ms)  SELECT "students".* FROM "students" WHERE "students"."id" = ? LIMIT ?  [["id", 1], ["LIMIT", 1]]
+=> #<Student:0x00007f82691bb7d0 id: 1, name: "Jon">
+
+# Using .find_by() method to retrieve a 'Student' instance using the 'name' property:
+[5] pry(main)> Student.find_by(name: "Jon")
+D, [2022-09-01T13:41:14.332834 #2780] DEBUG -- :   Student Load (0.2ms)  SELECT "students".* FROM "students" WHERE "students"."name" = ? LIMIT ?  [["name", "Jon"], ["LIMIT", 1]]
+=> #<Student:0x00007f82691837b8 id: 1, name: "Jon">
+
+# NOTE: This is what my gameplan of commands were:
+# Using 'attr_accessors' to get or set attributes for an instance of 'Student':
+student = Student.find_by(name: "Jon")
+puts "student.name: ", student.name
+
+student.name = "Steve"
+
+puts "student.name: ", student.name
+
+# ACTUAL OUTPUT:
+[6] pry(main)> student = Student.find_by(name: "Jon")
+D, [2022-09-01T13:43:19.143345 #2780] DEBUG -- :   Student Load (0.2ms)  SELECT "students".* FROM "students" WHERE "students"."name" = ? LIMIT ?  [["name", "Jon"], ["LIMIT", 1]]
+=> #<Student:0x00007f826c079590 id: 1, name: "Jon">
+
+[7] pry(main)> puts "student.name: ", student.name
+student.name:
+Jon
+=> nil
+
+[8] pry(main)> student.name = "Steve"
+=> "Steve"
+
+[9] pry(main)> puts "student.name: ", student.name
+student.name:
+Steve
+=> nil
+
+# Using '.save' to save the changes to the database:
+# NOTE: This was the game plan:
+student = Student.find_by(name: "Jon")
+student.name = "Steve"
+student.save()
+
+# ACTUAL OUTPUT:
+[10] pry(main)> student = Student.find_by(name: "Jon")
+D, [2022-09-01T13:45:39.376127 #2780] DEBUG -- :   Student Load (0.2ms)  SELECT "students".* FROM "students" WHERE "students"."name" = ? LIMIT ?  [["name", "Jon"], ["LIMIT", 1]]
+=> #<Student:0x00007f826bb3f9f8 id: 1, name: "Jon">
+
+[11] pry(main)> student.name = "Steve"
+=> "Steve"
+
+[12] pry(main)> student.save()
+D, [2022-09-01T13:45:49.165491 #2780] DEBUG -- :   TRANSACTION (0.1ms)  begin transaction
+D, [2022-09-01T13:45:49.166353 #2780] DEBUG -- :   Student Update (0.7ms)  UPDATE "students" SET "name" = ? WHERE "students"."id" = ?  [["name", "Steve"], ["id", 1]]
+D, [2022-09-01T13:45:49.169022 #2780] DEBUG -- :   TRANSACTION (2.2ms)  commit transaction
+=> true
+#+end_src
